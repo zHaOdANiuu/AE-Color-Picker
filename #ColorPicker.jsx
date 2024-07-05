@@ -165,7 +165,7 @@
             huePicker.location.y = Math.max(Math.min(255, e.clientY + huePicker.size[1] / 2), 0);
             hue = Math.round(360 - 360 * huePicker.location.y / 255);
             var value = src_hsbToRgb([ hue, 100, 100 ]);
-            colorBg.graphics.backgroundColor = colorBg.graphics.newBrush(0, rgbNormalize(value));
+            colorBg.graphics.backgroundColor = sample.graphics.backgroundColor = colorBg.graphics.newBrush(0, rgbNormalize(value))
             colorDataGroup.children[0].children[1].text = value[0].toString();
             hexTextBox.text = rgbToHex(value).substring(1);
         };
@@ -209,3 +209,4 @@
         };
     };
 }());
+var init = $.global["#ColorPicker"]();
