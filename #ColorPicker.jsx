@@ -18,12 +18,12 @@
  * @author 赵大牛
  * @license MIT
  * @description 创建一个颜色盘窗口,选取颜色
- * @global $.global[#ColorPicker]
+ * @global $.global['#ColorPicker']
  * @returns {{ hsb: number[], rgb: number[], hex: number[] } | null}
  * @requires zd-es-lib {@link https://github.com/zHaOdANiuu/zd-es-lib}
- * @example alert ( $.global[#ColorPicker]() )
+ * @example alert ( $.global['#ColorPicker']() )
  */
-;(function() {
+(function() {
     function __spreadArray(to, from, pack) {
         if (pack || arguments.length === 2) {
             for (var i = 0, l = from.length, ar; i < l; i++) {
@@ -286,4 +286,4 @@
             hex: hexTextBox.text
         } : null;
     }
-}())
+}());
