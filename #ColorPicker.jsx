@@ -21,7 +21,7 @@
  * @global $.global['#ColorPicker']
  * @returns {{ hsb: number[], rgb: number[], hex: number[] } | null}
  * @requires zd-es-lib {@link https://github.com/zHaOdANiuu/zd-es-lib}
- * @example alert ( $.global['#ColorPicker']() )
+ * @example alert ( app.objectToJSON( $.global['#ColorPicker']() ) )
  */
 (function() {
     function __spreadArray(to, from, pack) {
@@ -213,6 +213,7 @@
             name: "ok"
         }).onClick = function() {
             marker = true;
+            window.close();
         };
         colorDataView.add("button", undef, "cancel", {
             name: "cancel"
@@ -283,7 +284,7 @@
         return marker ? {
             hsb: [ +colorDataGroup.children[0].children[1].text, +colorDataGroup.children[1].children[1].text, +colorDataGroup.children[2].children[1].text ],
             rgb: [ +colorDataGroup.children[3].children[1].text, +colorDataGroup.children[4].children[1].text, +colorDataGroup.children[5].children[1].text ],
-            hex: hexTextBox.text
+            hex: '#' + hexTextBox.text
         } : null;
     }
 }());
