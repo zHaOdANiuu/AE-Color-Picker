@@ -1,61 +1,49 @@
-(function() {
-    "use strict";
-    var const_undef = void 0;
-    var rgbNormalize = function(rgb) {
-        return [ rgb[0] / 255, rgb[1] / 255, rgb[2] / 255 ];
-    };
-    var hsbNormalize = function(hsb) {
-        return [ hsb[0] / 360, hsb[1] / 100, hsb[2] / 100 ];
-    };
-    var rgbToHex = function(rgb) {
-        return "#" + ((rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16);
-    };
-    function hsbToRgb(hsb) {
-        var _a = hsbNormalize(hsb), h = _a[0], s = _a[1], b = _a[2];
-        var r, g, _b;
-        if (0 === s) {
-            r = g = _b = b;
-        } else {
-            var i = Math.floor(6 * h);
-            var f = 6 * h - i;
-            var p = b * (1 - s);
-            var q = b * (1 - s * f);
-            var t = b * (1 - s * (1 - f));
-            switch (i % 6) {
-              case 0:
-                r = b, g = t, _b = p;
-                break;
-
-              case 1:
-                r = q, g = b, _b = p;
-                break;
-
-              case 2:
-                r = p, g = b, _b = t;
-                break;
-
-              case 3:
-                r = p, g = q, _b = b;
-                break;
-
-              case 4:
-                r = t, g = p, _b = b;
-                break;
-
-              case 5:
-                r = b, g = p, _b = q;
+/**
+ * @file
+ *          ,----,                                                                            ,-.----.                                                    
+ *        .'   .`|    ,---,              ,----..             ,--,                             \    /  \                           ,-.                     
+ *     .'   .'   ;  .'  .' `\           /   /   \          ,--.'|                             |   :    \   ,--,               ,--/ /|                     
+ *   ,---, '    .',---.'     \         |   :     :  ,---.  |  | :     ,---.    __  ,-.        |   |  .\ :,--.'|             ,--. :/ |             __  ,-. 
+ *   |   :     ./ |   |  .`\  |        .   |  ;. / '   ,'\ :  : '    '   ,'\ ,' ,'/ /|        .   :  |: ||  |,              :  : ' /            ,' ,'/ /| 
+ *   ;   | .'  /  :   : |  '  |        .   ; /--` /   /   ||  ' |   /   /   |'  | |' |        |   |   \ :`--'_       ,---.  |  '  /      ,---.  '  | |' | 
+ *   `---' /  ;   |   ' '  ;  :        ;   | ;   .   ; ,. :'  | |  .   ; ,. :|  |   ,'        |   : .   /,' ,'|     /     \ '  |  :     /     \ |  |   ,' 
+ *     /  ;  /    '   | ;  .  |        |   : |   '   | |: :|  | :  '   | |: :'  :  /          ;   | |`-' '  | |    /    / ' |  |   \   /    /  |'  :  /   
+ *    ;  /  /--,  |   | :  |  '        .   | '___'   | .; :'  : |__'   | .; :|  | '           |   | ;    |  | :   .    ' /  '  : |. \ .    ' / ||  | '    
+ *   /  /  / .`|  '   : | /  ;         '   ; : .'|   :    ||  | '.'|   :    |;  : |           :   ' |    '  : |__ '   ; :__ |  | ' \ \'   ;   /|;  : |    
+ * ./__;       :  |   | '` ,/          '   | '/  :\   \  / ;  :    ;\   \  / |  , ;           :   : :    |  | '.'|'   | '.'|'  : |--' '   |  / ||  , ;    
+ * |   :     .'   ;   :  .'            |   :    /  `----'  |  ,   /  `----'   ---'            |   | :    ;  :    ;|   :    :;  |,'    |   :    | ---'     
+ * ;   |  .'      |   ,.'               \   \ .'            ---`-'                            `---'.|    |  ,   /  \   \  / '--'       \   \  /           
+ * `---'          '---'                  `---`                                                  `---`     ---`-'    `----'              `----'    
+ * @version 0.0.2
+ * @author 赵大牛
+ * @license MIT
+ * @description 创建一个颜色盘窗口,选取颜色
+ * @global $.global[#ColorPicker]
+ * @returns {{ hsb: number[], rgb: number[], hex: number[] } | null}
+ * @requires zd-es-lib {@link https://github.com/zHaOdANiuu/zd-es-lib}
+ * @example alert ( $.global[#ColorPicker]() )
+ */
+;(function() {
+    function __spreadArray(to, from, pack) {
+        if (pack || arguments.length === 2) {
+            for (var i = 0, l = from.length, ar; i < l; i++) {
+                if (ar || !(i in from)) {
+                    if (!ar) {
+                        ar = Array.prototype.slice.call(from, 0, i);
+                    }
+                    ar[i] = from[i];
+                }
             }
         }
-        return [ Math.round(255 * r), Math.round(255 * g), Math.round(255 * _b) ];
+        return to.concat(ar || Array.prototype.slice.call(from));
     }
-    var src_hsbToRgb = hsbToRgb;
     function mouseMoveEnviron(element, callback) {
         var leftClickStatus = false;
         element.addEventListener("mousedown", function() {
             leftClickStatus = true;
         });
         element.addEventListener("mousemove", function(e) {
-            leftClickStatus && callback(e);
+            leftClickStatus && callback.call(e.target, e);
         });
         element.addEventListener("mouseup", function() {
             leftClickStatus = false;
@@ -64,38 +52,110 @@
             leftClickStatus = false;
         });
     }
-    var event_mouseMoveEnviron = mouseMoveEnviron;
     function mouseMoveElement(element, callback) {
-        event_mouseMoveEnviron(element, function(e) {
-            element.location.x += e.clientX - element.size[0] / 2;
-            element.location.y += e.clientY - element.size[1] / 2;
-            callback();
+        mouseMoveEnviron(element, function(e) {
+            this.location.x += e.clientX - this.size[0] / 2;
+            this.location.y += e.clientY - this.size[1] / 2;
+            callback.call(this, e);
         });
     }
-    var event_mouseMoveElement = mouseMoveElement;
-    var __spreadArray = function(to, from, pack) {
-        if (pack || 2 === arguments.length) {
-            for (var ar, i = 0, l = from.length; i < l; i++) {
-                if (ar || !(i in from)) {
-                    ar || (ar = Array.prototype.slice.call(from, 0, i));
-                    ar[i] = from[i];
+    var undef = void 0;
+    var random = function(min, max) {
+        return Math.floor(generateRandomNumber() * (max - min) + min);
+    };
+    var clamp = function(min, value, max) {
+        return Math.min(Math.max(value, min), max);
+    };
+    var Color = {
+        rgbNormalize: function(rgb) {
+            return [ rgb[0] / 255, rgb[1] / 255, rgb[2] / 255 ];
+        },
+        hsbNormalize: function(hsb) {
+            return [ hsb[0] / 360, hsb[1] / 100, hsb[2] / 100 ];
+        },
+        randomHexColor: function() {
+            return this.rgbToHex([ random(0, 255), random(0, 255), random(0, 255) ]);
+        },
+        rgbToHex: function(rgb) {
+            return "#" + ((rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16);
+        },
+        hexToRgb: function(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [ parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16) ] : null;
+        },
+        rgbToHsb: function(rgb) {
+            var _a = this.rgbNormalize(rgb), r = _a[0], g = _a[1], b = _a[2];
+            var max = Math.max(r, g, b);
+            var min = Math.min(r, g, b);
+            var delta = max - min;
+            var h = max;
+            if (delta === 0) {
+                h = 0;
+            } else if (max === r) {
+                h = (g - b) / delta % 6;
+            } else if (max === g) {
+                h = (b - r) / delta + 2;
+            } else {
+                h = (r - g) / delta + 4;
+            }
+            return [ Math.round(h * 60), Math.round(delta === 0 ? 0 : delta / max * 100), Math.round(max * 100) ];
+        },
+        hsbToRgb: function(hsb) {
+            var _a = this.hsbNormalize(hsb), h = _a[0], s = _a[1], b = _a[2];
+            var r, g, _b;
+            if (s === 0) {
+                r = g = _b = b;
+            } else {
+                var i = Math.floor(h * 6);
+                var f = h * 6 - i;
+                var p = b * (1 - s);
+                var q = b * (1 - s * f);
+                var t = b * (1 - s * (1 - f));
+                switch (i % 6) {
+                  case 0:
+                    r = b, g = t, _b = p;
+                    break;
+
+                  case 1:
+                    r = q, g = b, _b = p;
+                    break;
+
+                  case 2:
+                    r = p, g = b, _b = t;
+                    break;
+
+                  case 3:
+                    r = p, g = q, _b = b;
+                    break;
+
+                  case 4:
+                    r = t, g = p, _b = b;
+                    break;
+
+                  case 5:
+                    r = b, g = p, _b = q;
+                    break;
                 }
             }
+            return [ Math.round(r * 255), Math.round(g * 255), Math.round(_b * 255) ];
+        },
+        rgbGradient: function(t, rgbStart, rgbEnd) {
+            var result = [];
+            var i = -1;
+            var len = 3;
+            while (++i < len) {
+                result.push(rgbStart[i] + t * (rgbEnd[i] - rgbStart[i]));
+            }
+            return result;
         }
-        return to.concat(ar || Array.prototype.slice.call(from));
     };
-    $.global["#ColorPicker"] = function(config) {
-        $.gc();
+    $.global['#ColorPicker'] = function (config) {
         var ColorPicker = {
             name: "ZD Color Picker",
             author: "赵大牛",
             verison: "0.0.1",
             units: [ "H", "S", "B", "R", "G", "B" ],
-            dataFontSize: 16,
-            ok: {
-                en: "Ok",
-                zh: "接受"
-            },
+            dataFontSize: 14,
             picker: {
                 rgbSize: 20,
                 hueSize: 10,
@@ -105,17 +165,18 @@
             barImage: "PNG\r\n\n\0\0\0\rIHDR\0\0\0\0\0\0ÿ\b\0\0\0wÁa\0\0\0\tpHYs\0\0\0\0\0\0\0O%ÄÖ\0\0\0$zTXtCreator\0\0\bsLÉOJUpL+I-RpMKKM.)\0AzÎjzÅ\0\0\0IDAThíØË\r@\fQý×Ë/Ôà@\bÍÞ|¬[³WÒú=°<¾\0\0\0\0\0À/[W¶°É)È\0\0\0\0\0×gu4e Â6QþÈ\0\0\0\0\01`i:t'%\0\0\0\0\0ø(°º2à¬Ta¨Â?\0\0\0\0\0\0ÀGXî=Æ\f\0\0\0\0\0÷;<Ùo´\"ÙtbiA\0\0\0\0IEND®B`"
         };
         if (config) {
-            config.dataFontSize && (ColorPicker.dataFontSize = config.dataFontSize);
-            config.picker && (ColorPicker.picker = config.picker);
+            if (config.dataFontSize) ColorPicker.dataFontSize = config.dataFontSize;
+            if (config.picker) ColorPicker.picker = config.picker;
         }
+        var marker = false;
         var pickerSetting = ColorPicker.picker;
-        var window = new Window("dialog", ColorPicker.name, [ 0, 0, 640, 400 ], {
+        var window = new Window("dialog", ColorPicker.name, undef, {
             closeButton: false
         });
         var leftGroup = window.add("group");
         var colorBg = leftGroup.add("group");
         var colorSrcImage = leftGroup.add("image");
-        var rgbPicker = leftGroup.add("customboundedvalue");
+        var rgbPicker = leftGroup.add("customview");
         var rightGroup = window.add("group");
         var colorBarGroup = rightGroup.add("group");
         var colorBarImage = colorBarGroup.add("image");
@@ -128,12 +189,12 @@
         var hexTextBox = hexColorDataGroup.add("edittext");
         window.margins = 5;
         window.spacing = 10;
+        window.size = [ 640, 400 ];
         colorBarGroup.spacing = hexColorDataGroup.spacing = 0;
         window.orientation = "row";
         leftGroup.orientation = "stack";
         colorDataView.orientation = colorDataGroup.orientation = "column";
         colorDataView.alignChildren = [ "left", "fill" ];
-        window.size = [ 640, 400 ];
         huePicker.size = [ pickerSetting.hueSize, pickerSetting.hueSize ];
         rgbPicker.size = [ pickerSetting.rgbSize, pickerSetting.rgbSize ];
         hexTextBox.size = [ 64, 16 ];
@@ -147,33 +208,30 @@
         hexTitle.text = "#";
         hexTextBox.text = "000000";
         hexTextBox.active = true;
-        window.defaultElement = colorDataView.add("button", const_undef, localize(ColorPicker.ok));
-        var hue = 0;
+        huePicker.value = 0;
+        colorDataView.add("button", undef, "ok", {
+            name: "ok"
+        }).onClick = function() {
+            marker = true;
+        };
+        colorDataView.add("button", undef, "cancel", {
+            name: "cancel"
+        });
+        var length = ColorPicker.units.length;
+        for (var i = -1; ++i < length; ) {
+            var g = colorDataGroup.add("group");
+            g.spacing = 0;
+            g.add("statictext", [ 0, 0, ColorPicker.dataFontSize, ColorPicker.dataFontSize ], ColorPicker.units[i] + ":").onDraw = function() {
+                this.graphics.drawString(this.text, this.graphics.newPen(0, [ 1, 1, 1 ], 1), 0, -ColorPicker.dataFontSize + 1, ScriptUI.newFont(this.graphics.font.name, "", ColorPicker.dataFontSize));
+            };
+            g.add("edittext", [ 0, 0, 2 * ColorPicker.dataFontSize, ColorPicker.dataFontSize ], "0");
+        }
         var rgbPickerBrushColor = [ 1, 1, 1 ];
-        var sizeOffset = 255 - pickerSetting.rgbSize / 2 - pickerSetting.strokeWidth;
-        var changColorData = function() {
-            var hsb = [ hue, Math.round(100 * rgbPicker.location.x / sizeOffset), Math.min(Math.round(100 - 100 * rgbPicker.location.y / sizeOffset), 100) ];
-            var rgb = src_hsbToRgb(hsb);
-            var colorData = __spreadArray([ 0, hsb[1], hsb[2] ], rgb, true);
-            for (var i = 0; ++i < 6; ) {
-                colorDataGroup.children[i].children[1].text = colorData[i].toString();
-            }
-            sample.graphics.backgroundColor = sample.graphics.newBrush(0, rgbNormalize(rgb));
-            hexTextBox.text = rgbToHex(rgb).substring(1);
-        };
-        var changHueColor = function(e) {
-            huePicker.location.y = Math.max(Math.min(255, e.clientY + huePicker.size[1] / 2), 0);
-            hue = Math.round(360 - 360 * huePicker.location.y / 255);
-            var value = src_hsbToRgb([ hue, 100, 100 ]);
-            colorBg.graphics.backgroundColor = sample.graphics.backgroundColor = colorBg.graphics.newBrush(0, rgbNormalize(value))
-            colorDataGroup.children[0].children[1].text = value[0].toString();
-            hexTextBox.text = rgbToHex(value).substring(1);
-        };
-        event_mouseMoveElement(rgbPicker, changColorData);
-        event_mouseMoveEnviron(colorBarImage, changHueColor);
+        var rgbSize = -pickerSetting.rgbSize / 2;
+        var offset = colorBg.preferredSize[0] + rgbSize;
         rgbPicker.onDraw = function() {
-            var offset = pickerSetting.strokeWidth / 2 + 1;
-            this.graphics.ellipsePath(offset, offset, pickerSetting.rgbSize - offset, pickerSetting.rgbSize - offset);
+            var pos = pickerSetting.strokeWidth / 2 + 1;
+            this.graphics.ellipsePath(pos, pos, pickerSetting.rgbSize - pos, pickerSetting.rgbSize - pos);
             this.graphics.strokePath(this.graphics.newPen(0, rgbPickerBrushColor, pickerSetting.strokeWidth));
         };
         huePicker.onDraw = function() {
@@ -182,31 +240,50 @@
             this.graphics.lineTo(8, 10);
             this.graphics.strokePath(this.graphics.newPen(0, [ 1, 1, 1 ], pickerSetting.strokeWidth));
         };
-        var loopMouseMoveEvent = function() {};
-        for (var i = -1; ++i < 6; ) {
-            var g = colorDataGroup.add("group");
-            g.spacing = 0;
-            g.add("statictext", [ 0, 0, ColorPicker.dataFontSize, ColorPicker.dataFontSize ], ColorPicker.units[i] + ":").onDraw = function() {
-                this.graphics.drawString(this.text, this.graphics.newPen(0, [ 1, 1, 1 ], 1), 0, -ColorPicker.dataFontSize, ScriptUI.newFont(this.graphics.font.name, "", ColorPicker.dataFontSize));
-            };
-            g.add("edittext", [ 0, 0, 2 * ColorPicker.dataFontSize, ColorPicker.dataFontSize ], "0", {
-                name: ColorPicker.units[i] + i.toString()
-            }).onChange = loopMouseMoveEvent;
-        }
+        var changColorData = function() {
+            var hsb = [ huePicker.value, Math.min(Math.round(100 * rgbPicker.location.x / 255), 100), Math.min(Math.round(100 - 100 * rgbPicker.location.y / offset), 100) ];
+            var rgb = Color.hsbToRgb(hsb);
+            var colorData = __spreadArray([ 0, hsb[1], hsb[2] ], rgb, true);
+            for (var i = 0; ++i < length; ) {
+                colorDataGroup.children[i].children[1].text = colorData[i].toString();
+            }
+            hexTextBox.text = Color.rgbToHex(rgb).substring(1);
+            sample.graphics.backgroundColor = sample.graphics.newBrush(0, Color.rgbNormalize(rgb));
+            if (hsb[2] > 90) {
+                rgbPickerBrushColor = [ 0, 0, 0 ];
+            } else {
+                rgbPickerBrushColor = [ 1, 1, 1 ];
+            }
+        };
+        var changHueColor = function(e) {
+            huePicker.location.y = clamp(0, e.clientY + huePicker.size[1] / 2, 255);
+            huePicker.value = Math.round(360 - 360 * huePicker.location.y / 255);
+            var value = Color.hsbToRgb([ huePicker.value, 100, 100 ]);
+            colorBg.graphics.backgroundColor = sample.graphics.backgroundColor = colorBg.graphics.newBrush(0, Color.rgbNormalize(value));
+            colorDataGroup.children[0].children[1].text = huePicker.value.toString();
+            hexTextBox.text = Color.rgbToHex(value).substring(1);
+        };
+        mouseMoveElement(rgbPicker, changColorData);
+        mouseMoveEnviron(colorBarImage, changHueColor);
+        colorBarImage.addEventListener("click", function(e) {
+            changHueColor(e);
+        });
+        colorSrcImage.addEventListener("click", function(e) {
+            rgbPicker.location = [ e.clientX - rgbPicker.size[0] / 2, e.clientY - rgbPicker.size[1] / 2 ];
+            changColorData();
+        });
         window.layout.layout(true);
         window.layout.resize();
         colorBg.location.y = 0.1;
-        rgbPicker.location.x = -pickerSetting.rgbSize / 2;
-        rgbPicker.location.y = 255 + rgbPicker.location.x;
+        rgbPicker.location = [ rgbSize, offset ];
         huePicker.location.y = 255;
         colorBarImage.location.y = 5;
         window.center();
         window.show();
-        return {
-            HSB: [ +colorDataGroup.children[0].children[1].text, +colorDataGroup.children[1].children[1].text, +colorDataGroup.children[2].children[1].text ],
-            RGB: [ +colorDataGroup.children[3].children[1].text, +colorDataGroup.children[4].children[1].text, +colorDataGroup.children[5].children[1].text ],
-            HEX: hexTextBox.text
-        };
-    };
-}());
-var init = $.global["#ColorPicker"]();
+        return marker ? {
+            hsb: [ +colorDataGroup.children[0].children[1].text, +colorDataGroup.children[1].children[1].text, +colorDataGroup.children[2].children[1].text ],
+            rgb: [ +colorDataGroup.children[3].children[1].text, +colorDataGroup.children[4].children[1].text, +colorDataGroup.children[5].children[1].text ],
+            hex: hexTextBox.text
+        } : null;
+    }
+}())
