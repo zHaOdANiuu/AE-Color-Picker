@@ -19,7 +19,7 @@
  * @license MIT
  * @description 创建一个颜色盘窗口,选取颜色
  * @global $.global['#ColorPicker']
- * @returns {{ hsb: number[], rgb: number[], hex: number[] } | null}
+ * @returns {{ hsb: number[], rgb: number[], hex: string } | null}
  * @requires zd-es-lib {@link https://github.com/zHaOdANiuu/zd-es-lib}
  * @example alert ( app.objectToJSON( $.global['#ColorPicker']() ) )
  */
