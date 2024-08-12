@@ -209,15 +209,8 @@
         hexTextBox.text = "000000";
         hexTextBox.active = true;
         huePicker.value = 0;
-        colorDataView.add("button", undef, "ok", {
-            name: "ok"
-        }).onClick = function() {
-            marker = true;
-            window.close();
-        };
-        colorDataView.add("button", undef, "cancel", {
-            name: "cancel"
-        });
+        window.defaultElement = colorDataView.add("button", undef, "ok");
+        window.cancelElement = colorDataView.add("button", undef, "cancel");
         var length = ColorPicker.units.length;
         for (var i = -1; ++i < length; ) {
             var g = colorDataGroup.add("group");
@@ -231,8 +224,8 @@
         var rgbSize = -pickerSetting.rgbSize / 2;
         var offset = colorBg.preferredSize[0] + rgbSize;
         rgbPicker.onDraw = function() {
-            var pos = pickerSetting.strokeWidth / 2 + 1;
-            this.graphics.ellipsePath(pos, pos, pickerSetting.rgbSize - pos, pickerSetting.rgbSize - pos);
+            var strokeOffset = pickerSetting.strokeWidth * 2;
+            this.graphics.ellipsePath(pickerSetting.strokeWidth, pickerSetting.strokeWidth, pickerSetting.rgbSize - strokeOffset, pickerSetting.rgbSize - strokeOffset);
             this.graphics.strokePath(this.graphics.newPen(0, rgbPickerBrushColor, pickerSetting.strokeWidth));
         };
         huePicker.onDraw = function() {
@@ -273,6 +266,11 @@
             rgbPicker.location = [ e.clientX - rgbPicker.size[0] / 2, e.clientY - rgbPicker.size[1] / 2 ];
             changColorData();
         });
+        window.defaultElement.onClick = function() {
+            marker = true;
+            window.close();
+        };
+        window.addEventListener('enter', window.defaultElement.onClick);
         window.layout.layout(true);
         window.layout.resize();
         colorBg.location.y = 0.1;
